@@ -27,8 +27,8 @@ def load_config() -> Dict[str, Any]:
     
     # Load user profile from local config if available
     user_profile = {
-        'name': os.getenv('USER_NAME', 'Shreyansh Rath'),
-        'email': os.getenv('USER_EMAIL', 'shreyanshrath4@gmail.com'),
+        'name': os.getenv('USER_NAME', 'Your Name'),
+        'email': os.getenv('USER_EMAIL', 'your.email@gmail.com'),
         'skills': os.getenv('USER_SKILLS', 'Python,AI/ML,Cloud Computing,AWS,Docker,Git,JavaScript,React,Node.js,PostgreSQL,TensorFlow,PyTorch').split(','),
         'experience': os.getenv('USER_EXPERIENCE', 'High school student with 2+ years coding experience'),
         'current_role': os.getenv('USER_CURRENT_ROLE', 'High School Student & Aspiring AI/Cloud Engineer'),

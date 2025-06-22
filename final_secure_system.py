@@ -53,8 +53,8 @@ else:
 
 # Update user profile with your impressive projects
 CONFIG['USER_PROFILE'].update({
-    'name': 'Shreyansh Rath',
-    'email': 'shreyanshrath4@gmail.com',
+    'name': 'Your Name',
+    'email': 'your.email@gmail.com',
     'skills': ['Python', 'PyTorch', 'TensorFlow', 'ONNX', 'TensorRT', 'YOLOv8', 'Computer Vision', 'GAN', 'Wav2Vec 2.0', 'LipNet', 'RAG', 'spaCy', 'Chrome Extensions', 'JavaScript', 'AI/ML', 'Hyperspectral Imaging', 'Medical AI', 'Real-time Processing'],
     'experience': 'High school student with advanced AI/ML research experience in medical imaging, multimodal systems, and real-time processing',
     'current_role': 'AI/ML Research Student & Developer',
