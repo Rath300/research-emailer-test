@@ -1,0 +1,20 @@
+John Doe
+john.doe@email.com
+
+EXPERIENCE
+Software Engineer with 3+ years of experience in full-stack development.
+
+SKILLS
+Python, JavaScript, React, Node.js, AWS, Docker, PostgreSQL, Machine Learning, TensorFlow
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Technology, 2020
+
+PROJECTS
+- Built a real-time chat application using React and Socket.io
+- Developed machine learning model for image classification
+- Created REST API with Node.js and PostgreSQL
+
+SUMMARY
+Passionate software developer with expertise in modern web technologies and AI/ML applications.

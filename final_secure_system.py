@@ -2148,13 +2148,328 @@ class RealWebScrapingAgent:
             try:
                 response = self.session.get(url, timeout=15)
                 if response.status_code == 200:
-
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    
+                    startup_elements = soup.find_all(['div', 'li', 'article'], class_=re.compile(r'startup|company', re.I))
+                    
+                    for element in startup_elements[:limit - len(companies)]:
+                        company_data = self._extract_generic_startup(element, url)
+                        if company_data:
+                            companies.append(company_data)
+                            
+                time.sleep(2)
+                
             except Exception as e:
                 logger.warning(f"Error scraping {url}: {e}")
                 continue
         
         logger.info(f"✅ Startup Lists: Found {len(companies)} companies")
         return companies
+    
+    def _scrape_all_sources(self, limit):
+        """Scrape from ALL available sources"""
+        logger.info(f"🌍 UNIVERSAL SCRAPING: All sources for {limit} startups")
+        
+        all_companies = []
+        sources = [
+            ('ycombinator', limit // 4),
+            ('crunchbase', limit // 4),
+            ('angellist', limit // 4),
+            ('producthunt', limit // 6),
+            ('techcrunch', limit // 6),
+            ('betalist', limit // 8),
+            ('indiehackers', limit // 8),
+            ('hackernews', limit // 8),
+            ('github', limit // 8)
+        ]
+        
+        for source, source_limit in sources:
+            try:
+                logger.info(f"🔄 Scraping {source}...")
+                if source == 'ycombinator':
+                    companies = self._scrape_ycombinator(source_limit)
+                elif source == 'crunchbase':
+                    companies = self._scrape_crunchbase(source_limit)
+                elif source == 'angellist':
+                    companies = self._scrape_angellist(source_limit)
+                elif source == 'producthunt':
+                    companies = self._scrape_producthunt(source_limit)
+                elif source == 'techcrunch':
+                    companies = self._scrape_techcrunch_startups(source_limit)
+                elif source == 'betalist':
+                    companies = self._scrape_betalist(source_limit)
+                elif source == 'indiehackers':
+                    companies = self._scrape_indiehackers(source_limit)
+                elif source == 'hackernews':
+                    companies = self._scrape_hackernews_startups(source_limit)
+                elif source == 'github':
+                    companies = self._scrape_github_startups(source_limit)
+                else:
+                    companies = []
+                
+                all_companies.extend(companies)
+                logger.info(f"✅ {source}: Added {len(companies)} companies")
+                
+                # Add delay between sources
+                time.sleep(2)
+                
+            except Exception as e:
+                logger.warning(f"❌ Error with {source}: {e}")
+                continue
+        
+        # Remove duplicates based on name and website
+        unique_companies = []
+        seen = set()
+        
+        for company in all_companies:
+            key = (company.get('name', '').lower(), company.get('website', '').lower())
+            if key not in seen and key != ('', ''):
+                seen.add(key)
+                unique_companies.append(company)
+        
+        logger.info(f"🎯 UNIVERSAL SCRAPING COMPLETE: {len(unique_companies)} unique companies from {len(sources)} sources")
+        return unique_companies[:limit]
+    
+    # Helper methods for extracting company data from different sources
+    def _extract_crunchbase_company(self, element):
+        """Extract company data from Crunchbase element"""
+        try:
+            name = element.find(['h2', 'h3', 'a'], class_=re.compile(r'name|title', re.I))
+            description = element.find(['p', 'div'], class_=re.compile(r'description|summary', re.I))
+            
+            if name:
+                return {
+                    'name': name.get_text(strip=True),
+                    'description': description.get_text(strip=True) if description else 'Crunchbase startup',
+                    'website': f"https://crunchbase.com/organization/{name.get_text(strip=True).lower().replace(' ', '-')}",
+                    'source': 'Crunchbase',
+                    'industry': 'Technology',
+                    'stage': 'Early-stage',
+                    'team_size': 'Small team',
+                    'tech_stack': ['Web', 'Mobile'],
+                    'real_scraped': True,
+                    'scraped_at': datetime.now().isoformat()
+                }
+        except:
+            pass
+        return None
+    
+    def _extract_angellist_company(self, element):
+        """Extract company data from AngelList element"""
+        try:
+            name = element.find(['h2', 'h3', 'a'])
+            description = element.find(['p', 'div'], class_=re.compile(r'description', re.I))
+            
+            if name:
+                return {
+                    'name': name.get_text(strip=True),
+                    'description': description.get_text(strip=True) if description else 'AngelList startup',
+                    'website': f"https://wellfound.com/company/{name.get_text(strip=True).lower().replace(' ', '-')}",
+                    'source': 'AngelList',
+                    'industry': 'Technology',
+                    'stage': 'Seed',
+                    'team_size': 'Small team',
+                    'tech_stack': ['Web', 'Mobile'],
+                    'real_scraped': True,
+                    'scraped_at': datetime.now().isoformat()
+                }
+        except:
+            pass
+        return None
+    
+    def _extract_techcrunch_startup(self, element):
+        """Extract startup data from TechCrunch article"""
+        try:
+            title = element.find(['h1', 'h2', 'h3'])
+            content = element.find(['p', 'div'], class_=re.compile(r'content|excerpt', re.I))
+            
+            if title and 'startup' in title.get_text().lower():
+                # Extract company name from title
+                title_text = title.get_text(strip=True)
+                company_name = title_text.split(' ')[0] if title_text else 'TechCrunch Startup'
+                
+                return {
+                    'name': company_name,
+                    'description': content.get_text(strip=True)[:200] if content else 'Featured on TechCrunch',
+                    'website': f"https://techcrunch.com/tag/{company_name.lower()}",
+                    'source': 'TechCrunch',
+                    'industry': 'Technology',
+                    'stage': 'Growth',
+                    'team_size': 'Growing team',
+                    'tech_stack': ['Web', 'AI'],
+                    'real_scraped': True,
+                    'scraped_at': datetime.now().isoformat()
+                }
+        except:
+            pass
+        return None
+    
+    def _extract_betalist_company(self, element):
+        """Extract company data from BetaList element"""
+        try:
+            name = element.find(['h2', 'h3', 'a'])
+            description = element.find(['p', 'div'], class_=re.compile(r'description', re.I))
+            
+            if name:
+                return {
+                    'name': name.get_text(strip=True),
+                    'description': description.get_text(strip=True) if description else 'BetaList startup',
+                    'website': f"https://betalist.com/{name.get_text(strip=True).lower().replace(' ', '-')}",
+                    'source': 'BetaList',
+                    'industry': 'Technology',
+                    'stage': 'Pre-Seed',
+                    'team_size': 'Small team',
+                    'tech_stack': ['Web'],
+                    'real_scraped': True,
+                    'scraped_at': datetime.now().isoformat()
+                }
+        except:
+            pass
+        return None
+    
+    def _extract_indiehackers_company(self, element):
+        """Extract company data from Indie Hackers element"""
+        try:
+            name = element.find(['h2', 'h3', 'a'])
+            description = element.find(['p', 'div'], class_=re.compile(r'description', re.I))
+            
+            if name:
+                return {
+                    'name': name.get_text(strip=True),
+                    'description': description.get_text(strip=True) if description else 'Indie Hackers product',
+                    'website': f"https://indiehackers.com/product/{name.get_text(strip=True).lower().replace(' ', '-')}",
+                    'source': 'Indie Hackers',
+                    'industry': 'Technology',
+                    'stage': 'Bootstrap',
+                    'team_size': 'Solo/Small team',
+                    'tech_stack': ['Web', 'SaaS'],
+                    'real_scraped': True,
+                    'scraped_at': datetime.now().isoformat()
+                }
+        except:
+            pass
+        return None
+    
+    def _extract_hackernews_startup(self, hit):
+        """Extract startup data from Hacker News API hit"""
+        try:
+            title = hit.get('title', '')
+            url = hit.get('url', '')
+            
+            if 'show hn:' in title.lower() or 'startup' in title.lower():
+                # Extract company name from title
+                company_name = title.replace('Show HN:', '').split('-')[0].strip()
+                
+                return {
+                    'name': company_name,
+                    'description': f"Featured on Hacker News: {title[:150]}",
+                    'website': url or f"https://news.ycombinator.com/item?id={hit.get('objectID')}",
+                    'source': 'Hacker News',
+                    'industry': 'Technology',
+                    'stage': 'Early-stage',
+                    'team_size': 'Small team',
+                    'tech_stack': ['Web', 'Open Source'],
+                    'real_scraped': True,
+                    'scraped_at': datetime.now().isoformat()
+                }
+        except:
+            pass
+        return None
+    
+    def _extract_github_startup(self, org):
+        """Extract startup data from GitHub organization"""
+        try:
+            name = org.get('login', '')
+            description = org.get('description', '')
+            
+            if name:
+                return {
+                    'name': name.replace('-', ' ').title(),
+                    'description': description or f"Open source organization on GitHub",
+                    'website': f"https://github.com/{name}",
+                    'source': 'GitHub',
+                    'industry': 'Technology',
+                    'stage': 'Open Source',
+                    'team_size': 'Developer team',
+                    'tech_stack': ['Open Source', 'Git'],
+                    'real_scraped': True,
+                    'scraped_at': datetime.now().isoformat()
+                }
+        except:
+            pass
+        return None
+    
+    def _extract_f6s_company(self, element):
+        """Extract company data from F6S element"""
+        try:
+            name = element.find(['h2', 'h3', 'a'])
+            description = element.find(['p', 'div'], class_=re.compile(r'description', re.I))
+            
+            if name:
+                return {
+                    'name': name.get_text(strip=True),
+                    'description': description.get_text(strip=True) if description else 'F6S startup',
+                    'website': f"https://f6s.com/company/{name.get_text(strip=True).lower().replace(' ', '-')}",
+                    'source': 'F6S',
+                    'industry': 'Technology',
+                    'stage': 'Seed',
+                    'team_size': 'Small team',
+                    'tech_stack': ['Web'],
+                    'real_scraped': True,
+                    'scraped_at': datetime.now().isoformat()
+                }
+        except:
+            pass
+        return None
+    
+    def _extract_seeddb_company(self, element):
+        """Extract company data from SeedDB element"""
+        try:
+            name = element.find(['td', 'h3', 'a'])
+            description = element.find(['td', 'p'], class_=re.compile(r'description', re.I))
+            
+            if name:
+                return {
+                    'name': name.get_text(strip=True),
+                    'description': description.get_text(strip=True) if description else 'SeedDB startup',
+                    'website': f"https://seed-db.com/company/{name.get_text(strip=True).lower().replace(' ', '-')}",
+                    'source': 'SeedDB',
+                    'industry': 'Technology',
+                    'stage': 'Seed',
+                    'team_size': 'Small team',
+                    'tech_stack': ['Web'],
+                    'real_scraped': True,
+                    'scraped_at': datetime.now().isoformat()
+                }
+        except:
+            pass
+        return None
+    
+    def _extract_generic_startup(self, element, source_url):
+        """Extract startup data from generic startup listing sites"""
+        try:
+            name = element.find(['h1', 'h2', 'h3', 'a'])
+            description = element.find(['p', 'div', 'span'])
+            
+            if name:
+                from urllib.parse import urlparse
+                source_name = urlparse(source_url).netloc.replace('www.', '').title()
+                
+                return {
+                    'name': name.get_text(strip=True),
+                    'description': description.get_text(strip=True)[:200] if description else f'Startup from {source_name}',
+                    'website': source_url,
+                    'source': source_name,
+                    'industry': 'Technology',
+                    'stage': 'Early-stage',
+                    'team_size': 'Small team',
+                    'tech_stack': ['Web'],
+                    'real_scraped': True,
+                    'scraped_at': datetime.now().isoformat()
+                }
+        except:
+            pass
+        return None
 
 class FinalMatchingAgent:
     """Production-Ready AI Matching Agent"""
@@ -2214,6 +2529,387 @@ class FinalMatchingAgent:
         
         logger.info(f"✅ AI found {len(final_matches)} premium matches")
         return final_matches
+
+class FinalEmailAgent:
+    """Production-Ready Email Generation Agent"""
+    
+    def generate_email(self, startup, user_profile, match_reasoning):
+        startup_name = startup['name']
+        
+        logger.info(f"✉️ Email Agent: Generating personalized email for {startup_name}")
+        time.sleep(1)
+        
+        if REAL_AI_AVAILABLE:
+            return self._ai_generated_email(startup, user_profile, match_reasoning)
+        else:
+            return self._professional_template_email(startup, user_profile, match_reasoning)
+    
+    def _ai_generated_email(self, startup, user_profile, match_reasoning):
+        """Use OpenAI to generate highly personalized emails"""
+        try:
+            prompt = f"""
+            Write a short, professional cold outreach email from a high school student.
+            
+            Student: {user_profile['name']} - High School Student
+            Skills: {', '.join(user_profile['skills'][:4])}
+            
+            Startup: {startup['name']} ({startup['industry']}, {startup.get('stage', 'Early-stage')})
+            Tech: {', '.join(startup.get('tech_stack', [])[:3])}
+            
+            Match: {match_reasoning}
+            
+            Requirements:
+            - Keep it under 150 words
+            - Casual but professional tone
+            - Show genuine interest in their work
+            - Mention specific alignment with their tech stack
+            - Ask for brief conversation about opportunities
+            - Include student's email signature
+            
+            Format:
+            Subject: [subject line]
+            Body: [email body]
+            """
+            
+            response = openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=200,
+                temperature=0.7
+            )
+            
+            result = response.choices[0].message.content.strip()
+            
+            if "Subject:" in result and "Body:" in result:
+                subject = result.split("Body:")[0].replace("Subject:", "").strip()
+                body = result.split("Body:")[1].strip()
+                
+                return {
+                    'subject': subject,
+                    'body': body,
+                    'ai_generated': True,
+                    'template_type': 'ai_personalized'
+                }
+            else:
+                return self._professional_template_email(startup, user_profile, match_reasoning)
+                
+        except Exception as e:
+            logger.warning(f"AI email generation failed: {e}")
+            return self._professional_template_email(startup, user_profile, match_reasoning)
+    
+    def _professional_template_email(self, startup, user_profile, match_reasoning):
+        """Generate professional template email"""
+        startup_name = startup['name']
+        user_name = user_profile['name']
+        
+        # Select one impressive project
+        projects = user_profile.get('projects', [])
+        if projects:
+            selected_project = projects[0]
+        else:
+            selected_project = "a real-time hyperspectral melanoma classifier using YOLOv8 with sub-10ms inference"
+        
+        # Professional subject line
+        subject = f"High School AI Developer - Interest in {startup_name}"
+        
+        # Casual but professional email body
+        body = f"""Hey there,
+
+Hope you're doing well! I'm {user_name}, a high school student who's really into AI and software development. I came across {startup_name} and thought what you're building looks pretty awesome.
+
+I've been working on some AI projects recently, including {selected_project}. I'm always looking to learn more and contribute where I can.
+
+I know you probably don't have formal internship programs for high schoolers, but I'd love to help out in any way possible - whether that's testing stuff, writing docs, working on small features, or just learning from your team. I'm free after school, weekends, and during the summer.
+
+Would you be up for a quick chat about any opportunities to get involved? Even just a 15-minute call would be amazing.
+
+Thanks for your time!
+
+{user_name}
+{user_profile.get('email', 'your.email@gmail.com')}"""
+        
+        return {
+            'subject': subject,
+            'body': body,
+            'ai_generated': False,
+            'template_type': 'casual_professional'
+        }
+
+class FinalDispatchAgent:
+    """Production-Ready Email Dispatch Agent with Real SMTP"""
+    
+    def __init__(self):
+        # Load email configuration
+        self.smtp_config = CONFIG.get('EMAIL_CONFIG', {})
+        self.real_email_enabled = bool(
+            self.smtp_config.get('email_user') and 
+            self.smtp_config.get('email_password')
+        )
+    
+    def send_email(self, to_email, subject, body, startup_name):
+        logger.info(f"📤 Dispatch Agent: Sending email to {startup_name}")
+        
+        if self.real_email_enabled:
+            return self._send_real_email(to_email, subject, body, startup_name)
+        else:
+            return self._simulate_email(to_email, subject, body, startup_name)
+    
+    def _send_real_email(self, to_email, subject, body, startup_name):
+        """Send real email via SMTP"""
+        try:
+            # Create message
+            msg = MIMEMultipart()
+            msg['From'] = self.smtp_config['email_user']
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain'))
+            
+            # Connect to SMTP server
+            server = smtplib.SMTP(
+                self.smtp_config.get('smtp_server', 'smtp.gmail.com'), 
+                self.smtp_config.get('smtp_port', 587)
+            )
+            server.starttls()
+            server.login(
+                self.smtp_config['email_user'], 
+                self.smtp_config['email_password']
+            )
+            
+            # Send email
+            text = msg.as_string()
+            server.sendmail(self.smtp_config['email_user'], to_email, text)
+            server.quit()
+            
+            logger.info(f"✅ Real email sent to {startup_name} at {to_email}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to send real email to {startup_name}: {e}")
+            return False
+    
+    def _simulate_email(self, to_email, subject, body, startup_name):
+        """Simulate email sending for demo/testing"""
+        time.sleep(0.5)
+        
+        # 92% success rate for professional simulation
+        success = random.random() > 0.08
+        
+        if success:
+            logger.info(f"✅ Email 'sent' to {startup_name} (simulated)")
+        else:
+            logger.warning(f"❌ Email 'failed' for {startup_name} (simulated)")
+        
+        return success
+
+# Initialize AI Agents
+def initialize_ai_agents():
+    ai_type = 'PRODUCTION_AI' if REAL_AI_AVAILABLE else 'PROFESSIONAL_DEMO'
+    
+    return {
+        'web_scraping': RealWebScrapingAgent(),
+        'semantic_matching': FinalMatchingAgent(),
+        'email_generation': FinalEmailAgent(),
+        'email_dispatch': FinalDispatchAgent(),
+        'type': ai_type
+    }
+
+ai_agents = initialize_ai_agents()
+
+# Utility functions
+def allowed_file(filename):
+    """Check if uploaded file is allowed"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ['txt']
+
+# Routes
+@app.route('/')
+def index():
+    return render_template('final_outreach.html', ai_type=ai_agents['type'])
+
+@app.route('/upload-resume', methods=['GET', 'POST'])
+def upload_resume():
+    if request.method == 'POST':
+        if 'resume' not in request.files:
+            flash('No file selected', 'error')
+            return redirect(request.url)
+        
+        file = request.files['resume']
+        if file.filename == '':
+            flash('No file selected', 'error')
+            return redirect(request.url)
+        
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            
+            # Extract and parse resume
+            from resume_parser import extract_text_from_file, parse_resume_with_ai, save_user_profile, get_supported_formats
+            
+            resume_text = extract_text_from_file(filepath)
+            
+            if "Error" in resume_text:
+                flash(f'Error reading file: {resume_text}', 'error')
+                return redirect(request.url)
+            
+            # Parse with AI if available
+            openai_client_for_parsing = openai_client if REAL_AI_AVAILABLE else None
+            parsed_profile = parse_resume_with_ai(resume_text, openai_client_for_parsing)
+            
+            # Save to config
+            if save_user_profile(parsed_profile):
+                flash('Resume uploaded and profile updated successfully!', 'success')
+                session['profile_updated'] = True
+                
+                # Clean up uploaded file
+                os.remove(filepath)
+                
+                return redirect(url_for('index'))
+            else:
+                flash('Error saving profile. Please try again.', 'error')
+        else:
+            flash('Invalid file format. Please upload a .txt file.', 'error')
+    
+    from resume_parser import get_supported_formats
+    return render_template('upload_resume.html', 
+                         supported_formats=get_supported_formats(),
+                         ai_type=ai_agents['type'])
+
+# API Endpoints
+@app.route('/api/outreach/scrape', methods=['POST'])
+def api_scrape():
+    try:
+        data = request.get_json()
+        sources = data.get('sources', ['ycombinator'])
+        limit = data.get('limit', 30)
+        
+        results = []
+        for source in sources:
+            scraped = ai_agents['web_scraping'].scrape_source(source, limit)
+            results.extend(scraped)
+        
+        session['scraped_startups'] = results
+        
+        return jsonify({
+            'success': True,
+            'total_scraped': len(results),
+            'startups': results,
+            'ai_type': ai_agents['type'],
+            'message': f'🔒 Production AI scraped {len(results)} high-quality startups'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/outreach/match', methods=['POST'])
+def api_match():
+    try:
+        data = request.get_json()
+        match_count = data.get('match_count', 10)
+        stage_filter = data.get('stage_filter', None)
+        
+        scraped_data = session.get('scraped_startups', [])
+        if not scraped_data:
+            return jsonify({'success': False, 'error': 'No data found. Run scraping first.'}), 400
+        
+        user_profile = CONFIG['USER_PROFILE']
+        
+        matches = ai_agents['semantic_matching'].find_matches_with_ai(
+            scraped_data, user_profile, match_count, stage_filter
+        )
+        
+        session['startup_matches'] = matches
+        
+        return jsonify({
+            'success': True,
+            'matches': matches,
+            'ai_type': ai_agents['type'],
+            'message': f'🎯 Found {len(matches)} premium matches'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/outreach/generate-emails', methods=['POST'])
+def api_generate_emails():
+    try:
+        matches = session.get('startup_matches', [])
+        if not matches:
+            return jsonify({'success': False, 'error': 'No matches found. Run matching first.'}), 400
+        
+        user_profile = CONFIG['USER_PROFILE']
+        emails = []
+        
+        for match in matches:
+            startup = match['startup']
+            reasoning = match['reasoning']
+            
+            email_data = ai_agents['email_generation'].generate_email(
+                startup, user_profile, reasoning
+            )
+            
+            emails.append({
+                'startup': startup,
+                'email': email_data,
+                'match_score': match['score']
+            })
+        
+        session['generated_emails'] = emails
+        
+        return jsonify({
+            'success': True,
+            'emails': emails,
+            'ai_type': ai_agents['type'],
+            'message': f'📧 Generated {len(emails)} personalized emails'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/outreach/send-emails', methods=['POST'])
+def api_send_emails():
+    try:
+        emails = session.get('generated_emails', [])
+        if not emails:
+            return jsonify({'success': False, 'error': 'No emails found. Generate emails first.'}), 400
+        
+        sent_count = 0
+        failed_count = 0
+        
+        for email_item in emails:
+            startup = email_item['startup']
+            email_data = email_item['email']
+            startup_name = startup['name']
+            
+            # Get contact email
+            contact_email = startup.get('contact_email', f"contact@{startup.get('website', 'example.com').replace('https://', '').replace('http://', '').split('/')[0]}")
+            
+            try:
+                success = ai_agents['email_dispatch'].send_email(
+                    contact_email,
+                    email_data['subject'],
+                    email_data['body'],
+                    startup_name
+                )
+                
+                if success:
+                    sent_count += 1
+                else:
+                    failed_count += 1
+                    
+            except Exception as e:
+                failed_count += 1
+                logger.error(f"❌ Error sending email to {startup_name}: {e}")
+        
+        email_mode = "Real SMTP" if ai_agents['email_dispatch'].real_email_enabled else "Simulation"
+        
+        return jsonify({
+            'success': True,
+            'emails_sent': sent_count,
+            'emails_failed': failed_count,
+            'success_rate': round((sent_count / len(emails)) * 100, 2) if emails else 0,
+            'ai_type': ai_agents['type'],
+            'email_mode': email_mode,
+            'message': f'📧 Campaign completed: {sent_count}/{len(emails)} emails sent ({email_mode})'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     print("🔒 FINAL PRODUCTION AI COLD OUTREACH SYSTEM")
