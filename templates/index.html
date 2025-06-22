@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Cold Outreach AI Matchmaker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-rocket text-primary me-3"></i>
+            Welcome to Cold Outreach AI
+        </h1>
+        <p class="lead text-muted">
+            Automate your startup outreach with AI-powered matching and personalized emails.
+        </p>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ session.get('startups_count', 0) }}</h4>
+                        <p class="card-text">Startups Loaded</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ session.get('projects', [])|length }}</h4>
+                        <p class="card-text">Projects Added</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-project-diagram fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ session.get('current_batch', '') and 'Ready' or 'Not Ready' }}</h4>
+                        <p class="card-text">Matching Status</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ 'Configured' if session.get('user_profile') else 'Not Set' }}</h4>
+                        <p class="card-text">Profile Status</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h3 class="mb-3">Quick Actions</h3>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Setup Profile</h5>
+                <p class="card-text">Create your professional profile with projects and skills.</p>
+                <a href="{{ url_for('profile') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right me-1"></i>Get Started
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-upload fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Upload Startups</h5>
+                <p class="card-text">Upload your startup database in CSV format.</p>
+                <a href="{{ url_for('startups') }}" class="btn btn-success">
+                    <i class="fas fa-arrow-right me-1"></i>Upload
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-magic fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Find Matches</h5>
+                <p class="card-text">Run AI-powered matching to find the best opportunities.</p>
+                <a href="{{ url_for('match') }}" class="btn btn-info">
+                    <i class="fas fa-arrow-right me-1"></i>Match
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Getting Started Guide -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-play-circle text-primary me-2"></i>
+                    Getting Started
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Step 1: Setup Your Profile</h5>
+                        <p class="text-muted">
+                            Create your professional profile with your name, title, experience, and contact information.
+                            This will be used to personalize your outreach emails.
+                        </p>
+                        <a href="{{ url_for('profile') }}" class="btn btn-outline-primary btn-sm">
+                            Setup Profile
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5>Step 2: Add Your Projects</h5>
+                        <p class="text-muted">
+                            Add your key projects with descriptions, tech stacks, and outcomes.
+                            This helps the AI find the best matches for your skills.
+                        </p>
+                        <a href="{{ url_for('projects') }}" class="btn btn-outline-success btn-sm">
+                            Add Projects
+                        </a>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Step 3: Upload Startup Database</h5>
+                        <p class="text-muted">
+                            Upload a CSV file with startup information including company name, mission, tech stack, and contact details.
+                        </p>
+                        <a href="{{ url_for('startups') }}" class="btn btn-outline-info btn-sm">
+                            Upload Startups
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5>Step 4: Run Matching & Send Emails</h5>
+                        <p class="text-muted">
+                            Configure matching parameters and let the AI find the best matches.
+                            Review and send personalized emails.
+                        </p>
+                        <a href="{{ url_for('match') }}" class="btn btn-outline-warning btn-sm">
+                            Start Matching
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+{% if session.get('current_batch') %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-history text-primary me-2"></i>
+                    Recent Activity
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Matching Complete!</strong> You have generated emails for your matches.
+                    <a href="{{ url_for('emails') }}" class="btn btn-success btn-sm ms-3">
+                        View Emails
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %} 

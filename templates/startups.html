@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Startups - Cold Outreach AI Matchmaker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-building text-primary me-2"></i>
+            Startup Database
+        </h2>
+        <p class="text-muted">
+            Upload your startup database in CSV format. The system will analyze each startup to find the best matches for your profile.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Upload Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-upload text-success me-2"></i>
+                    Upload Startup Database
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.startup_file.label(class="form-label") }}
+                        {{ form.startup_file(class="form-control", accept=".csv") }}
+                        {% if form.startup_file.errors %}
+                            <div class="text-danger">
+                                {% for error in form.startup_file.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Upload a CSV file with startup information. Required columns: company_name, mission, tech_stack, contact_name, contact_email
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        {{ form.submit(class="btn btn-success") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Current Database Status -->
+        {% if startups_count > 0 %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-database text-info me-2"></i>
+                    Database Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success fa-2x me-3"></i>
+                            <div>
+                                <h6 class="mb-0">{{ startups_count }} Startups Loaded</h6>
+                                <small class="text-muted">{{ startups_file }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-rocket text-primary fa-2x me-3"></i>
+                            <div>
+                                <h6 class="mb-0">Ready for Matching</h6>
+                                <small class="text-muted">Database is ready to use</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('match') }}" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>Start Matching
+                    </a>
+                    <button class="btn btn-outline-secondary" onclick="downloadSample()">
+                        <i class="fas fa-download me-1"></i>Download Sample
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <!-- CSV Format Guide -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle text-info me-2"></i>
+                    CSV Format Guide
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Required Columns:</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <code>company_name</code> - Startup name
+                    </li>
+                    <li class="mb-2">
+                        <code>mission</code> - Company mission/description
+                    </li>
+                    <li class="mb-2">
+                        <code>tech_stack</code> - Technologies used (comma-separated)
+                    </li>
+                    <li class="mb-2">
+                        <code>contact_name</code> - Contact person name
+                    </li>
+                    <li class="mb-2">
+                        <code>contact_email</code> - Contact email address
+                    </li>
+                </ul>
+                
+                <h6>Optional Columns:</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <code>website</code> - Company website
+                    </li>
+                    <li class="mb-2">
+                        <code>location</code> - Company location
+                    </li>
+                    <li class="mb-2">
+                        <code>funding_stage</code> - Funding stage
+                    </li>
+                    <li class="mb-2">
+                        <code>team_size</code> - Team size
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Sample Data -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-csv text-success me-2"></i>
+                    Sample Data
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Download a sample CSV file to see the correct format:</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>company_name</th>
+                                <th>mission</th>
+                                <th>tech_stack</th>
+                                <th>contact_name</th>
+                                <th>contact_email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>TechFlow</td>
+                                <td>AI-powered workflow automation</td>
+                                <td>Python, React, AWS</td>
+                                <td>John Smith</td>
+                                <td>john@techflow.com</td>
+                            </tr>
+                            <tr>
+                                <td>DataViz</td>
+                                <td>Real-time data visualization</td>
+                                <td>JavaScript, D3.js, Node.js</td>
+                                <td>Sarah Johnson</td>
+                                <td>sarah@dataviz.com</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button class="btn btn-outline-primary btn-sm w-100" onclick="downloadSample()">
+                    <i class="fas fa-download me-1"></i>Download Sample CSV
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Sources -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-link text-primary me-2"></i>
+                    Data Sources
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-globe fa-3x text-primary mb-3"></i>
+                                <h6>AngelList</h6>
+                                <p class="text-muted small">Export startup data from AngelList</p>
+                                <a href="https://angel.co" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    Visit AngelList
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-briefcase fa-3x text-success mb-3"></i>
+                                <h6>Crunchbase</h6>
+                                <p class="text-muted small">Export startup data from Crunchbase</p>
+                                <a href="https://crunchbase.com" target="_blank" class="btn btn-outline-success btn-sm">
+                                    Visit Crunchbase
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-3x text-info mb-3"></i>
+                                <h6>LinkedIn</h6>
+                                <p class="text-muted small">Export company data from LinkedIn</p>
+                                <a href="https://linkedin.com" target="_blank" class="btn btn-outline-info btn-sm">
+                                    Visit LinkedIn
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function downloadSample() {
+    // Create sample CSV content
+    const csvContent = `company_name,mission,tech_stack,contact_name,contact_email,website,location,funding_stage,team_size
+TechFlow,AI-powered workflow automation,Python React AWS,John Smith,john@techflow.com,https://techflow.com,San Francisco,Series A,15
+DataViz,Real-time data visualization,JavaScript D3.js Node.js,Sarah Johnson,sarah@dataviz.com,https://dataviz.com,New York,Seed,8
+CloudSync,Cloud storage optimization,Go Kubernetes Docker,Mike Chen,mike@cloudsync.com,https://cloudsync.com,Austin,Series B,25
+HealthTech,Digital health monitoring,Python TensorFlow React,Emily Davis,emily@healthtech.com,https://healthtech.com,Boston,Series A,12
+FinTech,Payment processing platform,Java Spring React,Alex Brown,alex@fintech.com,https://fintech.com,Chicago,Series C,40`;
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sample_startups.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    // Show success message
+    showToast('Sample CSV downloaded successfully!', 'success');
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Cold Outreach AI Matchmaker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-cog text-primary me-2"></i>
+            Settings & Configuration
+        </h2>
+        <p class="text-muted">
+            Manage your application settings and API configurations.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <!-- Email Configuration -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-envelope text-primary me-2"></i>
+                    Email Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if email_config.valid %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Email configuration is valid and ready to use.
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Email configuration needs to be set up.
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label">SMTP Server</label>
+                    <input type="text" class="form-control" id="smtpServer" 
+                           value="{{ email_config.smtp_server or '' }}" placeholder="smtp.gmail.com">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">SMTP Port</label>
+                    <input type="number" class="form-control" id="smtpPort" 
+                           value="{{ email_config.smtp_port or '' }}" placeholder="587">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="emailAddress" 
+                           value="{{ email_config.email_address or '' }}" placeholder="your@email.com">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Password/App Password</label>
+                    <input type="password" class="form-control" id="emailPassword" 
+                           value="{{ email_config.email_password or '' }}" placeholder="Your password">
+                    <div class="form-text">
+                        For Gmail, use an App Password instead of your regular password.
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="saveEmailConfig()">
+                    <i class="fas fa-save me-1"></i>Save Email Config
+                </button>
+            </div>
+        </div>
+        
+        <!-- API Configuration -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-key text-success me-2"></i>
+                    API Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">OpenAI API Key</label>
+                    <input type="password" class="form-control" id="openaiKey" 
+                           value="{{ email_config.openai_key or '' }}" placeholder="sk-...">
+                    <div class="form-text">
+                        Optional: Used for AI-generated emails. Leave empty to use templates.
+                    </div>
+                </div>
+                
+                <button class="btn btn-success" onclick="saveApiConfig()">
+                    <i class="fas fa-save me-1"></i>Save API Config
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <!-- Application Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle text-info me-2"></i>
+                    Application Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Version:</strong><br>
+                        <span class="text-muted">1.0.0</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Python Version:</strong><br>
+                        <span class="text-muted">3.8+</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Flask Version:</strong><br>
+                        <span class="text-muted">2.3.0+</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Last Updated:</strong><br>
+                        <span class="text-muted">2024</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="d-grid gap-2">
+                    <a href="https://github.com/your-repo" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-github me-1"></i>View on GitHub
+                    </a>
+                    <a href="/DOCUMENTATION.md" target="_blank" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-book me-1"></i>Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Management -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-database text-warning me-2"></i>
+                    Data Management
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-warning btn-sm" onclick="clearSessionData()">
+                        <i class="fas fa-trash me-1"></i>Clear Session Data
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="resetAllData()">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Reset All Data
+                    </button>
+                </div>
+                
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> These actions cannot be undone.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Help & Support -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-question-circle text-primary me-2"></i>
+                    Help & Support
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-play-circle text-primary me-2"></i>
+                        Getting Started Guide
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-csv text-success me-2"></i>
+                        CSV Format Guide
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-envelope text-info me-2"></i>
+                        Email Configuration Help
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-bug text-warning me-2"></i>
+                        Report Issues
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function saveEmailConfig() {
+    const config = {
+        smtp_server: $('#smtpServer').val(),
+        smtp_port: $('#smtpPort').val(),
+        email_address: $('#emailAddress').val(),
+        email_password: $('#emailPassword').val()
+    };
+    
+    // Save to localStorage for now (in production, this would be server-side)
+    localStorage.setItem('emailConfig', JSON.stringify(config));
+    showToast('Email configuration saved successfully!', 'success');
+}
+
+function saveApiConfig() {
+    const config = {
+        openai_key: $('#openaiKey').val()
+    };
+    
+    localStorage.setItem('apiConfig', JSON.stringify(config));
+    showToast('API configuration saved successfully!', 'success');
+}
+
+function clearSessionData() {
+    if (confirm('Are you sure you want to clear all session data? This will reset your profile and projects.')) {
+        // Clear session data (in production, this would be server-side)
+        localStorage.removeItem('userProfile');
+        localStorage.removeItem('projects');
+        localStorage.removeItem('currentBatch');
+        showToast('Session data cleared successfully!', 'success');
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 1000);
+    }
+}
+
+function resetAllData() {
+    if (confirm('Are you sure you want to reset ALL data? This will clear everything including configurations.')) {
+        localStorage.clear();
+        showToast('All data reset successfully!', 'success');
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 1000);
+    }
+}
+
+// Load configurations on page load
+$(document).ready(function() {
+    const emailConfig = localStorage.getItem('emailConfig');
+    if (emailConfig) {
+        const parsed = JSON.parse(emailConfig);
+        $('#smtpServer').val(parsed.smtp_server);
+        $('#smtpPort').val(parsed.smtp_port);
+        $('#emailAddress').val(parsed.email_address);
+        $('#emailPassword').val(parsed.email_password);
+    }
+    
+    const apiConfig = localStorage.getItem('apiConfig');
+    if (apiConfig) {
+        const parsed = JSON.parse(apiConfig);
+        $('#openaiKey').val(parsed.openai_key);
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 Final AI Cold Outreach System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">🔒 Final AI Cold Outreach System</a>
+            <div class="ms-auto">
+                <span class="badge bg-dark">{{ ai_type }}</span>
+                <a href="/upload-resume" class="btn btn-outline-dark btn-sm ms-2">📄 Upload Resume</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- AI Agents Dashboard -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">🤖 AI Cold Outreach Agents</h3>
+                        <small class="text-muted">Production-ready AI system for automated cold outreach</small>
+                    </div>
+                    <div class="card-body">
+                        
+                        <!-- Step 1: Web Scraping -->
+                        <div class="agent-step mb-4" id="step-1">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="mb-1">🕷️ Step 1: Web Scraping Agent</h5>
+                                    <p class="text-muted mb-0">Find startups from multiple sources</p>
+                                </div>
+                                <span class="step-status badge bg-secondary">Ready</span>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Data Sources</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="ycombinator" id="source-yc" checked>
+                                        <label class="form-check-label" for="source-yc">Y Combinator</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="producthunt" id="source-ph">
+                                        <label class="form-check-label" for="source-ph">Product Hunt</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="angellist" id="source-al">
+                                        <label class="form-check-label" for="source-al">AngelList</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="startup-limit" class="form-label">Startup Limit: <span id="startup-limit-value">30</span></label>
+                                    <input type="range" class="form-range" min="10" max="100" value="30" id="startup-limit">
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-dark" onclick="deployScrapeAgent()" id="scrape-btn">
+                                Deploy Web Scraping Agent
+                            </button>
+                            <div class="progress mt-2" style="display: none;" id="scrape-progress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Semantic Matching -->
+                        <div class="agent-step mb-4" id="step-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="mb-1">🎯 Step 2: Semantic Matching Agent</h5>
+                                    <p class="text-muted mb-0">AI-powered startup-profile matching</p>
+                                </div>
+                                <span class="step-status badge bg-secondary">Waiting</span>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="match-limit" class="form-label">Match Limit: <span id="match-limit-value">10</span></label>
+                                    <input type="range" class="form-range" min="5" max="25" value="10" id="match-limit">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Matching Criteria</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="match-skills" checked>
+                                        <label class="form-check-label" for="match-skills">Technical Skills</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="match-industry" checked>
+                                        <label class="form-check-label" for="match-industry">Industry Experience</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Stage Filter Section -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label class="form-label">🎯 Startup Stages to Target</label>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="stage-preseed" value="Pre-Seed" checked>
+                                                <label class="form-check-label" for="stage-preseed">Pre-Seed</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="stage-seed" value="Seed">
+                                                <label class="form-check-label" for="stage-seed">Seed</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="stage-seriesa" value="Series A">
+                                                <label class="form-check-label" for="stage-seriesa">Series A</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="stage-seriesb" value="Series B">
+                                                <label class="form-check-label" for="stage-seriesb">Series B+</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Select which funding stages to target. Pre-Seed is recommended for internship opportunities.</small>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-dark" onclick="deployMatchAgent()" id="match-btn" disabled>
+                                Deploy Semantic Matching Agent
+                            </button>
+                            <div class="progress mt-2" style="display: none;" id="match-progress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Email Generation -->
+                        <div class="agent-step mb-4" id="step-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="mb-1">✉️ Step 3: Email Generation Agent</h5>
+                                    <p class="text-muted mb-0">Generate personalized outreach emails</p>
+                                </div>
+                                <span class="step-status badge bg-secondary">Waiting</span>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Email Style</label>
+                                    <select class="form-select" id="email-style">
+                                        <option value="professional">Professional</option>
+                                        <option value="casual">Casual & Friendly</option>
+                                        <option value="technical">Technical Focus</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Personalization Level</label>
+                                    <select class="form-select" id="personalization">
+                                        <option value="high">High (AI-Generated)</option>
+                                        <option value="medium">Medium (Template-Based)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-dark" onclick="deployEmailAgent()" id="email-btn" disabled>
+                                Deploy Email Generation Agent
+                            </button>
+                            <div class="progress mt-2" style="display: none;" id="email-progress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Email Dispatch -->
+                        <div class="agent-step mb-4" id="step-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="mb-1">📤 Step 4: Email Dispatch Agent</h5>
+                                    <p class="text-muted mb-0">Send emails and track success rates</p>
+                                </div>
+                                <span class="step-status badge bg-secondary">Waiting</span>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Send Mode</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="send-mode" id="send-review" value="review" checked>
+                                        <label class="form-check-label" for="send-review">Review Before Sending</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="send-mode" id="send-auto" value="auto">
+                                        <label class="form-check-label" for="send-auto">Auto Send (Production)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email Throttling</label>
+                                    <select class="form-select" id="throttling">
+                                        <option value="slow">Slow (1 per minute)</option>
+                                        <option value="medium" selected>Medium (5 per minute)</option>
+                                        <option value="fast">Fast (10 per minute)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-dark" onclick="deployDispatchAgent()" id="dispatch-btn" disabled>
+                                Deploy Email Dispatch Agent
+                            </button>
+                            <div class="progress mt-2" style="display: none;" id="dispatch-progress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Full Campaign Button -->
+                        <div class="text-center mt-4">
+                            <button class="btn btn-dark btn-lg" onclick="runFullCampaign()" id="full-campaign-btn">
+                                🚀 Run Full AI Campaign
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="row mt-4" id="results-section" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">📊 Campaign Results</h4>
+                    </div>
+                    <div class="card-body" id="results-content">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Preview Modal -->
+        <div class="modal fade" id="emailPreviewModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">📧 Email Preview</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="email-preview-content">
+                        <!-- Email preview will be populated here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-dark" onclick="approveAndSend()">Approve & Send All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Update slider values
+        document.getElementById('startup-limit').addEventListener('input', function() {
+            document.getElementById('startup-limit-value').textContent = this.value;
+        });
+
+        document.getElementById('match-limit').addEventListener('input', function() {
+            document.getElementById('match-limit-value').textContent = this.value;
+        });
+
+        // Global variables
+        let campaignData = {};
+
+        // Deploy Web Scraping Agent
+        async function deployScrapeAgent() {
+            const btn = document.getElementById('scrape-btn');
+            const progress = document.getElementById('scrape-progress');
+            const status = document.querySelector('#step-1 .step-status');
+            
+            btn.disabled = true;
+            progress.style.display = 'block';
+            status.textContent = 'Processing';
+            status.className = 'step-status badge bg-warning';
+            
+            // Get selected sources
+            const sources = [];
+            if (document.getElementById('source-yc').checked) sources.push('ycombinator');
+            if (document.getElementById('source-ph').checked) sources.push('producthunt');
+            if (document.getElementById('source-al').checked) sources.push('angellist');
+            
+            const limit = document.getElementById('startup-limit').value;
+            
+            try {
+                const response = await fetch('/api/outreach/scrape', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({sources, limit: parseInt(limit)})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    status.textContent = 'Completed';
+                    status.className = 'step-status badge bg-success';
+                    document.getElementById('match-btn').disabled = false;
+                    campaignData.scraped = data.total_scraped;
+                    
+                    // Show success message
+                    showMessage(`✅ Scraped ${data.total_scraped} startups successfully!`, 'success');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                status.textContent = 'Failed';
+                status.className = 'step-status badge bg-danger';
+                showMessage(`❌ Error: ${error.message}`, 'error');
+            }
+            
+            progress.style.display = 'none';
+            btn.disabled = false;
+        }
+
+        // Deploy Semantic Matching Agent
+        async function deployMatchAgent() {
+            const btn = document.getElementById('match-btn');
+            const progress = document.getElementById('match-progress');
+            const status = document.querySelector('#step-2 .step-status');
+            
+            btn.disabled = true;
+            progress.style.display = 'block';
+            status.textContent = 'Processing';
+            status.className = 'step-status badge bg-warning';
+            
+            const matchCount = document.getElementById('match-limit').value;
+            
+            // Collect selected stages
+            const stageFilter = [];
+            if (document.getElementById('stage-preseed').checked) stageFilter.push('Pre-Seed');
+            if (document.getElementById('stage-seed').checked) stageFilter.push('Seed');
+            if (document.getElementById('stage-seriesa').checked) stageFilter.push('Series A');
+            if (document.getElementById('stage-seriesb').checked) stageFilter.push('Series B');
+            
+            // Validate at least one stage is selected
+            if (stageFilter.length === 0) {
+                showMessage('⚠️ Please select at least one startup stage to target!', 'warning');
+                status.textContent = 'Waiting';
+                status.className = 'step-status badge bg-secondary';
+                progress.style.display = 'none';
+                btn.disabled = false;
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/outreach/match', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        match_count: parseInt(matchCount),
+                        stage_filter: stageFilter
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    status.textContent = 'Completed';
+                    status.className = 'step-status badge bg-success';
+                    document.getElementById('email-btn').disabled = false;
+                    campaignData.matches = data.matches_found;
+                    campaignData.stageFilter = stageFilter;
+                    
+                    const stageText = stageFilter.join(', ');
+                    showMessage(`🎯 Found ${data.matches_found} high-quality matches targeting ${stageText} stages!`, 'success');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                status.textContent = 'Failed';
+                status.className = 'step-status badge bg-danger';
+                showMessage(`❌ Error: ${error.message}`, 'error');
+            }
+            
+            progress.style.display = 'none';
+            btn.disabled = false;
+        }
+
+        // Deploy Email Generation Agent
+        async function deployEmailAgent() {
+            const btn = document.getElementById('email-btn');
+            const progress = document.getElementById('email-progress');
+            const status = document.querySelector('#step-3 .step-status');
+            
+            btn.disabled = true;
+            progress.style.display = 'block';
+            status.textContent = 'Processing';
+            status.className = 'step-status badge bg-warning';
+            
+            try {
+                const response = await fetch('/api/outreach/generate-emails', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    status.textContent = 'Completed';
+                    status.className = 'step-status badge bg-success';
+                    document.getElementById('dispatch-btn').disabled = false;
+                    campaignData.emails = data.emails_generated;
+                    campaignData.emailData = data.emails;
+                    
+                    showMessage(`✉️ Generated ${data.emails_generated} personalized emails!`, 'success');
+                    
+                    // Show email preview
+                    showEmailPreview(data.emails);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                status.textContent = 'Failed';
+                status.className = 'step-status badge bg-danger';
+                showMessage(`❌ Error: ${error.message}`, 'error');
+            }
+            
+            progress.style.display = 'none';
+            btn.disabled = false;
+        }
+
+        // Deploy Email Dispatch Agent
+        async function deployDispatchAgent() {
+            const btn = document.getElementById('dispatch-btn');
+            const progress = document.getElementById('dispatch-progress');
+            const status = document.querySelector('#step-4 .step-status');
+            
+            btn.disabled = true;
+            progress.style.display = 'block';
+            status.textContent = 'Processing';
+            status.className = 'step-status badge bg-warning';
+            
+            try {
+                const response = await fetch('/api/outreach/send-emails', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    status.textContent = 'Completed';
+                    status.className = 'step-status badge bg-success';
+                    
+                    showMessage(`📤 Campaign completed! ${data.emails_sent} emails sent successfully.`, 'success');
+                    
+                    // Show results
+                    showResults(data);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                status.textContent = 'Failed';
+                status.className = 'step-status badge bg-danger';
+                showMessage(`❌ Error: ${error.message}`, 'error');
+            }
+            
+            progress.style.display = 'none';
+            btn.disabled = false;
+        }
+
+        // Run Full Campaign
+        async function runFullCampaign() {
+            const btn = document.getElementById('full-campaign-btn');
+            btn.disabled = true;
+            btn.innerHTML = '🔄 Running Full Campaign...';
+            
+            try {
+                await deployScrapeAgent();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                await deployMatchAgent();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                await deployEmailAgent();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                await deployDispatchAgent();
+                
+                btn.innerHTML = '✅ Campaign Completed!';
+                btn.className = 'btn btn-success btn-lg';
+            } catch (error) {
+                btn.innerHTML = '❌ Campaign Failed';
+                btn.className = 'btn btn-danger btn-lg';
+                btn.disabled = false;
+            }
+        }
+
+        // Show email preview
+        function showEmailPreview(emails) {
+            const content = document.getElementById('email-preview-content');
+            let html = '';
+            
+            emails.forEach((email, index) => {
+                html += `
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>To: ${email.startup_name}</strong>
+                            <span class="badge bg-secondary ms-2">Match: ${email.match_score}%</span>
+                            ${email.ai_generated ? '<span class="badge bg-primary ms-1">AI Generated</span>' : ''}
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Subject:</strong> ${email.subject}</p>
+                            <p><strong>Body:</strong></p>
+                            <pre style="white-space: pre-wrap; font-family: inherit;">${email.body}</pre>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            content.innerHTML = html;
+            new bootstrap.Modal(document.getElementById('emailPreviewModal')).show();
+        }
+
+        // Show results
+        function showResults(data) {
+            const section = document.getElementById('results-section');
+            const content = document.getElementById('results-content');
+            
+            content.innerHTML = `
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-primary">${data.emails_sent}</h3>
+                            <p class="text-muted">Emails Sent</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-success">${data.success_rate}%</h3>
+                            <p class="text-muted">Success Rate</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-info">${campaignData.matches || 0}</h3>
+                            <p class="text-muted">Matches Found</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-warning">${campaignData.scraped || 0}</h3>
+                            <p class="text-muted">Startups Analyzed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <p><strong>Campaign ID:</strong> ${data.campaign_id}</p>
+                    <p><strong>AI Type:</strong> ${data.ai_type}</p>
+                </div>
+            `;
+            
+            section.style.display = 'block';
+        }
+
+        // Approve and send emails
+        function approveAndSend() {
+            bootstrap.Modal.getInstance(document.getElementById('emailPreviewModal')).hide();
+            deployDispatchAgent();
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const alert = document.createElement('div');
+            alert.className = `alert ${alertClass} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Find a safe place to insert the message
+            const container = document.querySelector('.container');
+            const firstChild = container.firstElementChild;
+            
+            if (firstChild) {
+                container.insertBefore(alert, firstChild);
+            } else {
+                container.appendChild(alert);
+            }
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

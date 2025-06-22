@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Projects - Cold Outreach AI Matchmaker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-project-diagram text-primary me-2"></i>
+            Your Projects
+        </h2>
+        <p class="text-muted">
+            Add your key projects with descriptions, tech stacks, and outcomes. This helps the AI find the best matches for your skills.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Add New Project Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus text-success me-2"></i>
+                    Add New Project
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="projectForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="projectName" class="form-label">Project Name *</label>
+                                <input type="text" class="form-control" id="projectName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="projectRole" class="form-label">Your Role</label>
+                                <input type="text" class="form-control" id="projectRole" placeholder="e.g., Lead Developer">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="projectDescription" class="form-label">Description *</label>
+                        <textarea class="form-control" id="projectDescription" rows="3" required 
+                                  placeholder="Brief description of the project, what it does, and your contributions..."></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="techStack" class="form-label">Tech Stack *</label>
+                                <input type="text" class="form-control" id="techStack" required
+                                       placeholder="e.g., React, Node.js, PostgreSQL, AWS">
+                                <div class="form-text">Separate technologies with commas</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="projectDuration" class="form-label">Duration</label>
+                                <input type="text" class="form-control" id="projectDuration" placeholder="e.g., 12 months">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="outcomes" class="form-label">Key Outcomes *</label>
+                        <input type="text" class="form-control" id="outcomes" required
+                               placeholder="e.g., 50% revenue increase, 10,000+ users, 99.9% uptime">
+                        <div class="form-text">Separate outcomes with commas</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus me-1"></i>Add Project
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Projects List -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list text-primary me-2"></i>
+                    Your Projects ({{ projects|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="projectsList">
+                    {% if projects %}
+                        {% for project in projects %}
+                        <div class="card mb-3 project-item" data-index="{{ loop.index0 }}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="card-title">{{ project.name }}</h6>
+                                        {% if project.role %}
+                                            <p class="text-muted mb-2"><small>{{ project.role }}</small></p>
+                                        {% endif %}
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger delete-project" data-index="{{ loop.index0 }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                
+                                <p class="card-text">{{ project.description }}</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Tech Stack:</strong>
+                                        <div class="mt-1">
+                                            {% for tech in project.tech_stack %}
+                                                <span class="badge bg-primary me-1">{{ tech }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Outcomes:</strong>
+                                        <div class="mt-1">
+                                            {% for outcome in project.outcomes %}
+                                                <span class="badge bg-success me-1">{{ outcome }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if project.duration %}
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>{{ project.duration }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No projects added yet</h5>
+                            <p class="text-muted">Add your first project using the form above.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb text-warning me-2"></i>
+                    Project Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Focus on impact</strong> - include metrics and outcomes
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Be specific</strong> about technologies and your role
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Include recent projects</strong> that showcase current skills
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Quantify results</strong> when possible (users, revenue, etc.)
+                    </li>
+                </ul>
+                
+                <hr>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Pro Tip:</strong> Projects with clear outcomes and modern tech stacks get better matches.
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-arrow-right text-primary me-2"></i>
+                    Next Steps
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">Once you've added your projects, you can:</p>
+                <a href="{{ url_for('startups') }}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                    <i class="fas fa-upload me-1"></i>Upload Startup Database
+                </a>
+                <a href="{{ url_for('match') }}" class="btn btn-outline-success btn-sm w-100">
+                    <i class="fas fa-search me-1"></i>Start Matching
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Add new project
+    $('#projectForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const projectData = {
+            name: $('#projectName').val(),
+            description: $('#projectDescription').val(),
+            tech_stack: $('#techStack').val(),
+            outcomes: $('#outcomes').val(),
+            duration: $('#projectDuration').val(),
+            role: $('#projectRole').val()
+        };
+        
+        $.ajax({
+            url: '/api/projects',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(projectData),
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                }
+            },
+            error: function() {
+                alert('Error adding project. Please try again.');
+            }
+        });
+    });
+    
+    // Delete project
+    $('.delete-project').on('click', function() {
+        const index = $(this).data('index');
+        
+        if (confirm('Are you sure you want to delete this project?')) {
+            $.ajax({
+                url: `/api/projects/${index}`,
+                method: 'DELETE',
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                },
+                error: function() {
+                    alert('Error deleting project. Please try again.');
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %} 

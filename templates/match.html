@@ -1,0 +1,441 @@
+{% extends "base.html" %}
+
+{% block title %}Match - Cold Outreach AI Matchmaker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-search text-primary me-2"></i>
+            AI-Powered Matching
+        </h2>
+        <p class="text-muted">
+            Configure matching parameters and run AI-powered analysis to find the best startup opportunities for your profile.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <!-- Configuration Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog text-primary me-2"></i>
+                    Matching Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.min_score_threshold.label(class="form-label") }}
+                        {{ form.min_score_threshold(class="form-control", type="range", min="0.1", max="1.0", step="0.1") }}
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">0.1 (More matches)</small>
+                            <small class="text-muted">1.0 (High quality only)</small>
+                        </div>
+                        <div class="form-text">
+                            Current threshold: <span id="thresholdValue">{{ form.min_score_threshold.data }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.email_tone.label(class="form-label") }}
+                        {{ form.email_tone(class="form-select") }}
+                        <div class="form-text">
+                            Choose the tone for generated emails
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.email_length.label(class="form-label") }}
+                        {{ form.email_length(class="form-select") }}
+                        <div class="form-text">
+                            Choose the length of generated emails
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.auto_send(class="form-check-input") }}
+                            {{ form.auto_send.label(class="form-check-label") }}
+                        </div>
+                        <div class="form-text">
+                            Automatically send emails for high-scoring matches (≥0.8)
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Matching Tips -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb text-warning me-2"></i>
+                    Matching Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Lower threshold</strong> = More matches, lower quality
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Higher threshold</strong> = Fewer matches, higher quality
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Confident tone</strong> works best for experienced professionals
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <strong>Professional tone</strong> is safe for most situations
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Run Matching -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-rocket text-success me-2"></i>
+                    Run Matching
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="matchingStatus">
+                    <div class="text-center py-4">
+                        <i class="fas fa-play-circle fa-3x text-primary mb-3"></i>
+                        <h5>Ready to Start Matching</h5>
+                        <p class="text-muted">
+                            Click the button below to run AI-powered matching against your startup database.
+                        </p>
+                        <button id="runMatching" class="btn btn-success btn-lg">
+                            <i class="fas fa-search me-2"></i>Start Matching
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="matchingProgress" style="display: none;">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5>Running AI Matching...</h5>
+                        <p class="text-muted">This may take a few moments</p>
+                        
+                        <div class="progress mb-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 0%"></div>
+                        </div>
+                        
+                        <div id="matchingSteps">
+                            <div class="step active">
+                                <i class="fas fa-user-check text-success"></i>
+                                <span>Analyzing profile...</span>
+                            </div>
+                            <div class="step">
+                                <i class="fas fa-database text-muted"></i>
+                                <span>Processing startups...</span>
+                            </div>
+                            <div class="step">
+                                <i class="fas fa-brain text-muted"></i>
+                                <span>Running AI matching...</span>
+                            </div>
+                            <div class="step">
+                                <i class="fas fa-envelope text-muted"></i>
+                                <span>Generating emails...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        <div id="matchingResults" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar text-info me-2"></i>
+                        Matching Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 id="totalMatches" class="text-primary">0</h4>
+                                <small class="text-muted">Total Matches</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 id="averageScore" class="text-success">0.0</h4>
+                                <small class="text-muted">Average Score</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 id="highQuality" class="text-warning">0</h4>
+                                <small class="text-muted">High Quality (≥0.8)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 id="autoSend" class="text-info">0</h4>
+                                <small class="text-muted">Auto-Send Ready</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6>Top Matches</h6>
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm" onclick="exportResults('csv')">
+                                <i class="fas fa-download me-1"></i>Export CSV
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="viewEmails()">
+                                <i class="fas fa-envelope me-1"></i>View Emails
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="matchesList">
+                        <!-- Matches will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <!-- Toasts will be added here -->
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.step {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.step.active {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.step i {
+    margin-right: 0.5rem;
+    width: 20px;
+}
+
+.match-item {
+    border-left: 4px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.match-item:hover {
+    border-left-color: #0d6efd;
+    background-color: #f8f9fa;
+}
+
+.match-score {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.match-score.high {
+    color: #198754;
+}
+
+.match-score.medium {
+    color: #ffc107;
+}
+
+.match-score.low {
+    color: #dc3545;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Update threshold value display
+    $('#min_score_threshold').on('input', function() {
+        $('#thresholdValue').text($(this).val());
+    });
+    
+    // Run matching
+    $('#runMatching').on('click', function() {
+        runMatchingProcess();
+    });
+});
+
+function runMatchingProcess() {
+    // Show progress
+    $('#matchingStatus').hide();
+    $('#matchingProgress').show();
+    
+    // Simulate progress steps
+    const steps = $('#matchingSteps .step');
+    let currentStep = 0;
+    
+    const progressInterval = setInterval(function() {
+        if (currentStep < steps.length) {
+            steps.removeClass('active');
+            steps.eq(currentStep).addClass('active');
+            currentStep++;
+        } else {
+            clearInterval(progressInterval);
+        }
+    }, 1000);
+    
+    // Animate progress bar
+    $('.progress-bar').animate({width: '100%'}, 4000);
+    
+    // Make API call
+    $.ajax({
+        url: '/api/match',
+        method: 'POST',
+        success: function(response) {
+            if (response.success) {
+                displayResults(response);
+                showToast('Matching completed successfully!', 'success');
+            } else {
+                showToast('Error: ' + response.error, 'danger');
+                resetMatching();
+            }
+        },
+        error: function() {
+            showToast('Error running matching process', 'danger');
+            resetMatching();
+        }
+    });
+}
+
+function displayResults(data) {
+    // Hide progress, show results
+    $('#matchingProgress').hide();
+    $('#matchingResults').show();
+    
+    // Update stats
+    $('#totalMatches').text(data.total_matches);
+    $('#averageScore').text(data.average_score.toFixed(2));
+    
+    const highQuality = data.matches.filter(m => m.match_score >= 0.8).length;
+    const autoSend = data.matches.filter(m => m.auto_send).length;
+    
+    $('#highQuality').text(highQuality);
+    $('#autoSend').text(autoSend);
+    
+    // Display matches
+    const matchesList = $('#matchesList');
+    matchesList.empty();
+    
+    data.matches.forEach(function(match, index) {
+        const scoreClass = match.match_score >= 0.8 ? 'high' : 
+                          match.match_score >= 0.6 ? 'medium' : 'low';
+        
+        const matchHtml = `
+            <div class="card mb-3 match-item" data-index="${index}">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="card-title">${match.company_name}</h6>
+                            <p class="text-muted mb-2">${match.contact_name} • ${match.contact_email}</p>
+                            
+                            <div class="row mb-2">
+                                <div class="col-md-4">
+                                    <small class="text-muted">Tech Stack Alignment:</small>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar" style="width: ${match.tech_stack_alignment * 100}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted">Domain Alignment:</small>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar" style="width: ${match.domain_alignment * 100}%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted">Project Relevance:</small>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar" style="width: ${match.project_relevance * 100}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p class="card-text small">${match.rationale}</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="match-score ${scoreClass} mb-2">
+                                ${(match.match_score * 100).toFixed(1)}%
+                            </div>
+                            ${match.auto_send ? '<span class="badge bg-success">Auto-Send</span>' : ''}
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="previewEmail(${index})">
+                                    <i class="fas fa-eye me-1"></i>Preview
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        matchesList.append(matchHtml);
+    });
+}
+
+function resetMatching() {
+    $('#matchingProgress').hide();
+    $('#matchingStatus').show();
+    $('.progress-bar').css('width', '0%');
+    $('#matchingSteps .step').removeClass('active');
+}
+
+function previewEmail(index) {
+    // This would show a modal with the email preview
+    showToast('Email preview feature coming soon!', 'info');
+}
+
+function exportResults(format) {
+    $.get(`/api/export/${format}`)
+        .done(function(response) {
+            if (response.success) {
+                showToast('Export completed successfully!', 'success');
+            } else {
+                showToast('Export failed: ' + response.error, 'danger');
+            }
+        })
+        .fail(function() {
+            showToast('Export failed', 'danger');
+        });
+}
+
+function viewEmails() {
+    window.location.href = '/emails';
+}
+</script>
+{% endblock %} 

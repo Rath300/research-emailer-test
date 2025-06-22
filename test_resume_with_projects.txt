@@ -1,0 +1,28 @@
+Shreyansh Rath
+shreyanshrath4@gmail.com
+
+EXPERIENCE
+High school student with 2+ years of self-taught programming experience
+Passionate about AI and cloud engineering
+
+SKILLS
+- Python, JavaScript, React, Node.js
+- AI/ML, TensorFlow, PyTorch, OpenAI APIs
+- Cloud Computing, AWS, Docker, Kubernetes
+- Database: PostgreSQL, MongoDB
+- Git, REST APIs, Flask, FastAPI
+
+PROJECTS
+Built an AI-powered cold outreach system using OpenAI APIs and Flask for automated startup discovery
+Developed a cloud-deployed web scraper with email automation using Python and AWS
+Created full-stack web applications with React frontend and Node.js backend
+Implemented Docker containerized applications deployed on AWS with CI/CD pipelines
+Designed a machine learning model for sentiment analysis using TensorFlow and Python
+
+EDUCATION
+High School Student (Expected Graduation 2025)
+Self-taught programming through online courses and projects
+
+SUMMARY
+Passionate high school student with strong programming skills and interest in AI/cloud engineering. 
+Seeking internship opportunities to gain real-world experience and contribute to innovative projects. 
